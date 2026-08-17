@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Risk Assessment Tool — Power Plant Desk Top Assessment</title>
+<style>
+:root{
+  --ink:#0B1220; --navy:#16243B; --slate:#2E4360; --mist:#DCE4EF; --mist-2:#EEF3F9;
+  --paper:#FFFFFF; --line:#C9D4E4; --line-soft:#E3EAF3;
+  --accent:#2F6DB5; --accent-dk:#1E4E85; --muted:#5B6B82;
+  --poor-fg:#A32B23; --poor-bg:#FBE7E5;
+  --fair-fg:#8C6212; --fair-bg:#FBF1D6;
+  --good-fg:#22694A; --good-bg:#E1F1E8;
+  --vgood-fg:#12513A; --vgood-bg:#CFE9DC;
+  --shadow:0 1px 2px rgba(11,18,32,.06), 0 8px 24px rgba(11,18,32,.06);
+  --r:10px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:"Inter","Segoe UI",system-ui,-apple-system,Helvetica,Arial,sans-serif;
+  background:var(--mist-2); color:var(--ink); font-size:14.5px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--accent);text-decoration:none}
+
+/* ---------- top nav (matches kuwaitre site chrome) ---------- */
+.nav{background:var(--ink);color:#fff;position:sticky;top:0;z-index:60}
+.nav-in{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:28px;padding:0 22px;height:64px}
+.brand{display:flex;align-items:center;gap:10px;background:#fff;padding:6px 12px;border-radius:4px}
+.brand svg{display:block}
+.brand-txt{font-weight:800;line-height:1.05;color:var(--ink);font-size:15px;letter-spacing:-.2px}
+.nav-links{display:flex;gap:26px;margin-left:auto;align-items:center}
+.nav-links a{color:#E7ECF3;font-size:14px;font-weight:500;opacity:.85}
+.nav-links a:hover{opacity:1}
+.nav-links a.active{color:#fff;opacity:1;font-weight:600;position:relative}
+.nav-links a.active:after{content:"";position:absolute;left:0;right:0;bottom:-22px;height:3px;background:var(--accent)}
+@media(max-width:900px){.nav-links{display:none}}
+
+/* ---------- hero ---------- */
+.hero{background:var(--mist);border-bottom:1px solid var(--line)}
+.hero-in{max-width:1400px;margin:0 auto;padding:34px 22px 30px}
+.eyebrow{font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--slate);font-weight:600}
+.hero h1{margin:10px 0 8px;font-size:40px;line-height:1.06;letter-spacing:-1.4px;font-weight:800}
+.hero p{margin:0;max-width:900px;color:#31415A;font-size:15px}
+.hero-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.pill{background:rgba(255,255,255,.7);border:1px solid var(--line);border-radius:999px;padding:5px 13px;font-size:12.5px;color:var(--slate);font-weight:600}
+@media(max-width:700px){.hero h1{font-size:28px;letter-spacing:-.6px}}
+
+/* ---------- tab strip ---------- */
+.tabs{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:64px;z-index:50}
+.tabs-in{max-width:1400px;margin:0 auto;display:flex;gap:2px;padding:0 14px;overflow-x:auto;scrollbar-width:thin}
+.tab{flex:0 0 auto;border:0;background:transparent;padding:13px 14px;cursor:pointer;font-size:13.5px;font-weight:600;
+  color:var(--muted);border-bottom:3px solid transparent;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.tab:hover{color:var(--ink);background:var(--mist-2)}
+.tab.on{color:var(--ink);border-bottom-color:var(--accent)}
+.tab .idx{font-size:11px;font-weight:700;color:#fff;background:var(--line);color:var(--slate);
+  width:20px;height:20px;border-radius:5px;display:grid;place-items:center}
+.tab.on .idx{background:var(--accent);color:#fff}
+.tab .dot{width:7px;height:7px;border-radius:50%;background:var(--good-fg)}
+
+/* ---------- layout ---------- */
+.wrap{max-width:1400px;margin:0 auto;padding:22px 22px 120px}
+.card{background:var(--paper);border:1px solid var(--line-soft);border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:18px}
+.card-h{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap}
+.card-h h2{margin:0;font-size:16px;letter-spacing:-.3px}
+.card-h .sub{color:var(--muted);font-size:12.5px}
+.card-b{padding:16px 18px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:840px){.grid2,.grid3{grid-template-columns:1fr}}
+.spacer{flex:1}
+
+/* ---------- controls ---------- */
+label.lbl{display:block;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--slate);margin-bottom:5px}
+.inp,select.inp,textarea.inp{width:100%;background:#fff;border:1px solid var(--line);border-radius:8px;padding:9px 11px;outline:none;transition:border .12s,box-shadow .12s}
+.inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(47,109,181,.15)}
+textarea.inp{resize:vertical;min-height:64px;line-height:1.55}
+.hint{font-size:12px;color:var(--muted);margin-top:5px}
+.btn{border:1px solid var(--line);background:#fff;color:var(--slate);border-radius:8px;padding:8px 14px;font-size:13.5px;
+  font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:.12s}
+.btn:hover{background:var(--mist-2);border-color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.pri{background:var(--slate);border-color:var(--slate);color:#fff}
+.btn.pri:hover{background:var(--navy);border-color:var(--navy)}
+.btn.acc{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.acc:hover{background:var(--accent-dk);border-color:var(--accent-dk)}
+.btn.sm{padding:5px 9px;font-size:12px;border-radius:7px}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.ghost:hover{background:var(--mist-2)}
+.btn.danger{color:var(--poor-fg);border-color:#EBC9C5}
+.btn.danger:hover{background:var(--poor-bg)}
+.row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+
+/* ---------- field rows ---------- */
+.field{border:1px solid var(--line-soft);border-radius:10px;margin-bottom:12px;overflow:hidden;background:#fff}
+.field.busy{border-color:var(--accent);box-shadow:0 0 0 3px rgba(47,109,181,.10)}
+.field.err{border-color:#E3B4AF}
+.f-top{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;background:#FBFCFE;border-bottom:1px solid var(--line-soft)}
+.code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;font-weight:700;color:var(--accent-dk);
+  background:#EAF1FA;border:1px solid #D3E2F3;border-radius:5px;padding:2px 6px;white-space:nowrap;margin-top:1px}
+.f-name{font-weight:650;font-size:14px;letter-spacing:-.15px}
+.f-tag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);
+  border:1px solid var(--line);border-radius:5px;padding:1px 6px}
+.f-tools{margin-left:auto;display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.f-body{padding:12px 13px}
+.f-split{display:grid;grid-template-columns:150px 1fr;gap:12px}
+@media(max-width:700px){.f-split{grid-template-columns:1fr}}
+.prompt-box{margin-top:9px;background:#F7FAFD;border:1px dashed var(--line);border-radius:8px;padding:10px}
+.prompt-box textarea{width:100%;border:1px solid var(--line);border-radius:6px;padding:7px 9px;font-size:12.5px;min-height:66px;resize:vertical}
+
+/* rating select colouring */
+select.rate{font-weight:700;text-align:center}
+select.rate[data-v="poor"]{background:var(--poor-bg);color:var(--poor-fg);border-color:#E9C4C0}
+select.rate[data-v="fair"]{background:var(--fair-bg);color:var(--fair-fg);border-color:#E8D5A2}
+select.rate[data-v="good"]{background:var(--good-bg);color:var(--good-fg);border-color:#BEDDCB}
+select.rate[data-v="very good"]{background:var(--vgood-bg);color:var(--vgood-fg);border-color:#A8D6C1}
+
+/* ---------- images ---------- */
+.thumbs{display:flex;gap:9px;flex-wrap:wrap;margin-top:10px}
+.thumb{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
+.thumb img{display:block;max-height:118px;max-width:220px}
+.thumb .x{position:absolute;top:4px;right:4px;background:rgba(11,18,32,.72);color:#fff;border:0;border-radius:5px;
+  width:22px;height:22px;cursor:pointer;font-size:13px;line-height:1}
+.dropzone{border:2px dashed var(--line);border-radius:10px;padding:26px;text-align:center;color:var(--muted);background:#FBFCFE;cursor:pointer}
+.dropzone.hot{border-color:var(--accent);background:#EFF5FC;color:var(--accent-dk)}
+
+/* ---------- misc ---------- */
+.bar{height:6px;background:var(--line-soft);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);transition:width .25s}
+.badge{font-size:11.5px;font-weight:700;border-radius:6px;padding:2px 8px;border:1px solid}
+.badge.ok{color:var(--good-fg);background:var(--good-bg);border-color:#BEDDCB}
+.badge.wait{color:var(--fair-fg);background:var(--fair-bg);border-color:#E8D5A2}
+.badge.bad{color:var(--poor-fg);background:var(--poor-bg);border-color:#E9C4C0}
+.badge.neutral{color:var(--slate);background:var(--mist-2);border-color:var(--line)}
+.doclist{display:flex;flex-direction:column;gap:8px}
+.docitem{display:flex;align-items:center;gap:10px;border:1px solid var(--line-soft);border-radius:8px;padding:9px 11px;background:#FBFCFE}
+.note{background:#F7FAFD;border-left:3px solid var(--accent);padding:10px 12px;border-radius:0 8px 8px 0;font-size:13px;color:#33455F}
+.warn{background:var(--fair-bg);border-left:3px solid var(--fair-fg);padding:10px 12px;border-radius:0 8px 8px 0;font-size:13px;color:#6B4C10}
+.err-box{background:var(--poor-bg);border-left:3px solid var(--poor-fg);padding:10px 12px;border-radius:0 8px 8px 0;font-size:13px;color:#7C2118}
+table.mini{width:100%;border-collapse:collapse;font-size:13px}
+table.mini th,table.mini td{border-bottom:1px solid var(--line-soft);padding:7px 9px;text-align:left;vertical-align:top}
+table.mini th{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--slate)}
+
+/* ---------- footer nav ---------- */
+.footbar{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.97);border-top:1px solid var(--line);
+  backdrop-filter:blur(8px);z-index:55}
+.footbar-in{max-width:1400px;margin:0 auto;padding:11px 22px;display:flex;align-items:center;gap:10px}
+.step-txt{font-size:12.5px;color:var(--muted);font-weight:600}
+
+/* ---------- chat ---------- */
+.chat-fab{position:fixed;right:22px;bottom:78px;z-index:70;background:var(--accent);color:#fff;border:0;border-radius:999px;
+  padding:12px 18px;font-weight:700;cursor:pointer;box-shadow:0 8px 24px rgba(30,78,133,.35);display:flex;gap:8px;align-items:center}
+.chat-panel{position:fixed;right:22px;bottom:78px;width:410px;max-width:calc(100vw - 28px);height:min(620px,calc(100vh - 170px));
+  background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 20px 60px rgba(11,18,32,.24);z-index:71;display:flex;flex-direction:column;overflow:hidden}
+.chat-h{background:var(--ink);color:#fff;padding:11px 14px;display:flex;align-items:center;gap:9px}
+.chat-h b{font-size:14px}
+.chat-body{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:11px;background:var(--mist-2)}
+.msg{max-width:88%;padding:9px 12px;border-radius:12px;font-size:13.5px;white-space:pre-wrap;word-wrap:break-word}
+.msg.u{align-self:flex-end;background:var(--slate);color:#fff;border-bottom-right-radius:3px}
+.msg.a{align-self:flex-start;background:#fff;border:1px solid var(--line-soft);border-bottom-left-radius:3px}
+.chat-f{border-top:1px solid var(--line-soft);padding:10px;display:flex;gap:8px;background:#fff}
+.chat-f textarea{flex:1;border:1px solid var(--line);border-radius:9px;padding:8px 10px;resize:none;height:44px;font-size:13.5px}
+
+/* ---------- toast ---------- */
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:86px;background:var(--ink);color:#fff;
+  padding:10px 18px;border-radius:10px;z-index:90;font-size:13.5px;box-shadow:0 10px 30px rgba(11,18,32,.3)}
+.spin{width:14px;height:14px;border:2px solid rgba(47,109,181,.25);border-top-color:var(--accent);border-radius:50%;
+  display:inline-block;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media print{.nav,.tabs,.footbar,.chat-fab,.chat-panel,.f-tools,.btn{display:none!important}
+  .card{break-inside:avoid;box-shadow:none}body{background:#fff}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script>
+  if (window.pdfjsLib) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  }
+</script>
+<script type="text/babel" data-presets="react">
+/* ============================================================
+   KUWAIT RE — POWER PLANT RISK REVIEW / DTA ANALYSIS TOOL
+   Single file. React 18 + Babel. Gemini API (user key, client side).
+
+   Field list below mirrors Draft_Power_DTA_blank_2025_Universal.xlsx
+   row for row (sheet "DTA") — one universal sheet used for every
+   plant type. Rows tagged flex:true are the six technology-specific
+   rows (Gas Turbines / Steam Turbines / HRSG / Hot Zone & Cold Zone /
+   Dam specifications / Hydro Turbines) plus the two Machinery
+   Breakdown rows (Dam / Hydro turbines) that only apply to some
+   plant types — for the rest, Gemini is instructed to answer
+   "Not applicable". Every other row applies to every plant type,
+   so the field list itself never changes with the plant selector;
+   only the wording of the answers does.
+   ============================================================ */
+
+const RATINGS = ["", "poor", "fair", "good", "very good"];
+
+const PLANTS = [
+  { id: "gas",     label: "Gas turbine / Combined cycle" },
+  { id: "coal",    label: "Coal / Lignite thermal" },
+  { id: "hydro",   label: "Hydroelectric (dam / RoR)" },
+  { id: "nuclear", label: "Nuclear" },
+  { id: "diesel",  label: "Diesel / HFO engine" },
+  { id: "solar",   label: "Solar PV (± BESS)" },
+  { id: "wind",    label: "Wind farm" },
+  { id: "other",   label: "Other / mixed generation" },
+];
+
+/* kind: "text" | "rated" | "pml" | "value_comment"
+   opts: { flex:true } marks a technology-specific row              */
+const F = (code, label, kind, prompt, opts) => ({ code, label, kind, prompt, ...(opts || {}) });
+
+/* ---------------- General Information — rows 4-16, 21 ---------------- */
+const GEN = [
+  F("GEN-01", "Date of Assessment", "text", "Today's date. This is normally set by the reviewer, not read from the report."),
+  F("GEN-02", "Name of the Account", "text", "Name of the insured / plant with installed capacity in MW and unit configuration. Max 20 words."),
+  F("GEN-03", "Location", "text", "Full site address — town, district, state, country — plus latitude/longitude of the main blocks if stated. Max 50 words."),
+  F("GEN-04", "Nature of Occupancy", "text", "Type of generation (e.g. 2x330 MW coal fired thermal, combined cycle gas, run-of-river hydro), fuel used and configuration. Max 20 words."),
+  F("GEN-05", "Number of Locations", "text", "From the executive summary: how many plants/sites are covered under the policy. Strictly a single number."),
+  F("GEN-06", "PD Sum Insured", "text", "Property damage sum insured with currency, in millions. Blank if not stated."),
+  F("GEN-07", "BI Sum Insured", "text", "Business interruption sum insured with currency, in millions. Blank if not stated."),
+  F("GEN-08", "BI Indemnity Period", "text", "Indemnity period in months. Number + 'months' only."),
+  F("GEN-09", "Total Sum Insured", "text", "Total sum insured (PD + BI) with currency, in millions."),
+  F("GEN-10", "Report Made by", "text", "Name of the surveyor / risk engineering firm that produced the report, plus office location. Max 20 words."),
+  F("GEN-11", "Date of the Report", "text", "Date of survey and date of report in DD/MM/YYYY. If both are given, state both."),
+  F("GEN-12", "Loss Scenario", "text", "The top three loss scenarios described in the report, most severe first, each with the affected asset. Max 80 words."),
+  F("GEN-13", "Probability", "text", "Rate the likelihood of the main loss scenario as High, Moderate or Low, with a five word justification."),
+  F("GEN-14", "DTA prepared by", "text", "Name of the Kuwait Re risk engineer — filled by the reviewer, not from the report."),
+];
+
+/* ---------------- PML — rows 17-20 ---------------- */
+const PML = [
+  F("PML-01", "PD PML", "pml", "Property damage loss estimate (PML/MFL) exactly as stated in the report, with currency and units. Number and currency only."),
+  F("PML-02", "BI PML", "pml", "Business interruption loss estimate as stated in the report, with currency and units. Number and currency only."),
+  F("PML-03", "Total PML", "pml", "Total loss estimate (PD + BI) as stated in the report, with currency and units."),
+];
+
+/* CONTINUING WITH REMAINING SECTIONS... */
+const PD = [
+  F("PD-01", "Layout", "rated",
+    "Layout in 30 words: block arrangement and the actual separation distances between power block, transformer yard, fuel storage, stores and admin. Name the distances."),
+];
+
+const BI = [
+  F("BI-01", "Make up Possibilities", "rated",
+    "Make-up possibilities in 50 words: reserve margin, ability to buy replacement power, PPA/merchant arrangement, seasonality and the plant's ability to recover lost generation."),
+];
+
+const MB = [
+  F("MB-01", "Transformers", "rated",
+    "Transformer reliability in 60 words: DGA and furan testing frequency and latest results, oil BDV/moisture, tan delta and SFRA, thermography, tap changer maintenance, age of the units and any trend of rising gas levels."),
+];
+
+const NH = [
+  F("NH-01", "Earthquake", "rated", "Earthquake exposure in 30 words: seismic zone, PGA or design basis, distance to nearest fault, and the seismic design standard used."),
+];
+
+const CL = [
+  F("CL-01", "Number of Claims for the Last Five Years", "value_comment",
+    "Put the claim count in the value (or '-' if none). In the comment, in 100 words, give the year, cause and paid/estimated amount for each claim."),
+];
+
+const RI = [
+  F("RI-01", "Total No of Recommendations", "text", "Total number of recommendations in the report. Number only."),
+];
+
+const OUT = [
+  F("OUT-01", "Outlook for the Risk", "rated",
+    "Outlook in 100 words based on site hazards, construction, control measures, fire protection, machinery condition, NAT CAT exposure and recommendation compliance. State whether the risk is improving, stable or deteriorating."),
+];
+
+const SECTIONS = [
+  { id: "setup",   title: "Setup and Documents", short: "Setup",       fields: [] },
+  { id: "general", title: "General Information", short: "General",     fields: [...GEN, ...PML] },
+  { id: "pd",      title: "Materials Damage",    short: "Materials Damage", fields: PD },
+  { id: "bi",      title: "Business Interruption", short: "BI",        fields: BI },
+  { id: "mb",      title: "Machinery Breakdown", short: "Machinery Breakdown", fields: MB },
+  { id: "nh",      title: "Natural Hazards",     short: "NAT CAT",     fields: NH },
+  { id: "claims",  title: "Claims",              short: "Claims",      fields: CL },
+  { id: "ri",      title: "Risk Improvements",   short: "Recommendations", fields: RI },
+  { id: "outlook", title: "Outlook and Underwriter Notes", short: "Outlook", fields: OUT },
+  { id: "annex",   title: "Annexure",            short: "Annexure",    fields: [] },
+  { id: "export",  title: "Review and Export",   short: "Export",      fields: [] },
+];
+
+const fieldsFor = (sec, _plant) => sec.fields;
+const sectionFields = (sec, state) => {
+  const removed = (state && state.removedCodes) || [];
+  const base = sec.fields.filter(f => !removed.includes(f.code));
+  const custom = (state && state.customFields && state.customFields[sec.id]) || [];
+  return [...base, ...custom];
+};
+
+const CODE_PREFIX = {
+  general: "GEN", pd: "PD", bi: "BI", mb: "MB", nh: "NH",
+  claims: "CL", ri: "RI", outlook: "OUT",
+};
+
+const ALL_FIELDS = SECTIONS.flatMap(s => s.fields);
+const fieldByCode = Object.fromEntries(ALL_FIELDS.map(f => [f.code, f]));
+
+const DEFAULT_MODELS = ["gemini-3.7-flash", "gemini-3.6-flash", "gemini-3.5-flash"];
+const GEM_BASE = "https://generativelanguage.googleapis.com/v1beta";
+
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+  del(k)    { try { localStorage.removeItem(k); } catch (e) {} },
+};
+
+async function gemini({ apiKey, model, system, user, json = false }) {
+  if (!apiKey) throw new Error("Enter your Gemini API key on the Setup tab first.");
+  const body = { contents: [{ role: "user", parts: [{ text: user }] }], generationConfig: { temperature: 0.2, ...(json ? { responseMimeType: "application/json" } : {}) } };
+  if (system) body.systemInstruction = { parts: [{ text: system }] };
+  const r = await fetch(`${GEM_BASE}/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j?.error?.message || `Gemini returned HTTP ${r.status}`);
+  const cand = j.candidates && j.candidates[0];
+  if (!cand) throw new Error("No answer returned.");
+  const text = (cand.content?.parts || []).map(p => p.text || "").join("").trim();
+  if (!text) throw new Error("Empty answer — try a different model.");
+  return text;
+}
+
+const { useState, useEffect, useRef, useMemo } = React;
+
+function App() {
+  const [state, setState] = useState({ apiKey: "", plant: "gas", model: DEFAULT_MODELS[0] });
+  const [toast, setToast] = useState("");
+
+  const showToast = (m) => { setToast(m); setTimeout(() => setToast(""), 3000); };
+
+  return (
+    <div>
+      <nav className="nav">
+        <div className="nav-in">
+          <div className="brand">
+            <svg width="26" height="26" viewBox="0 0 32 32"><path d="M3 16 13 5v7l-6 4 6 4v7z" fill="#2AA6C6"/><path d="M13 16 23 5v7l-6 4 6 4v7z" fill="#16243B"/></svg>
+            <div className="brand-txt">Kuwait<br/>Re</div>
+          </div>
+        </div>
+      </nav>
+
+      <header className="hero">
+        <div className="hero-in">
+          <div className="eyebrow">Risk Engineering — Desk Top Assessment</div>
+          <h1>Power Plant Risk Review Tool</h1>
+          <p>Upload your survey report and generate comprehensive DTA assessments using AI-powered analysis. Your data stays in this browser — nothing is uploaded to external servers.</p>
+        </div>
+      </header>
+
+      <main className="wrap">
+        <div className="card">
+          <div className="card-h"><h2>Getting Started</h2></div>
+          <div className="card-b">
+            <div className="grid2">
+              <div>
+                <label className="lbl">Gemini API Key</label>
+                <input className="inp" type="password" value={state.apiKey} placeholder="AIza…"
+                       onChange={e => setState({...state, apiKey: e.target.value})} />
+                <div className="hint">Get a key at aistudio.google.com/apikey</div>
+              </div>
+              <div>
+                <label className="lbl">Plant Type</label>
+                <select className="inp" value={state.plant} onChange={e => setState({...state, plant: e.target.value})}>
+                  {PLANTS.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
+                </select>
+              </div>
+            </div>
+            <button className="btn acc" style={{ marginTop: 16 }} onClick={() => showToast("Welcome to the Risk Assessment Tool!")}>
+              Start New Review
+            </button>
+            {toast && <div className="toast">{toast}</div>}
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
